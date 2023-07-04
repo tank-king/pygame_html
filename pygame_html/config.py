@@ -1,2 +1,0 @@
-FONT = 'consolas'
-DEBUG = True
