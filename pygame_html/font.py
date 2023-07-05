@@ -30,7 +30,9 @@ class FontEngine:
         'wraplength': 0,
         'text': '',
         'antialias': True,
-        'color': 'white'
+        'color': 'white',
+        'prepend': '',
+        'append': ''
     }
 
     @staticmethod
@@ -46,8 +48,9 @@ class FontEngine:
 
     @staticmethod
     @lru_cache(maxsize=100)
-    def get_text(font, text, antialias, color, size, bold, italic, underline, strikethrough, wraplength=0):
+    def get_text(font, text, antialias, color, size, bold, italic, underline, strikethrough, wraplength=0, prepend='', append=''):
         font = FontEngine.get_font(font, size, bold, italic, underline, strikethrough)
+        text = prepend + text + append
         text = text.replace('\t', '    ')  # convert tabs to 4 spaces
         return font.render(text, antialias, color, None, wraplength)
 

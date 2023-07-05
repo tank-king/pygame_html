@@ -34,7 +34,13 @@ class IContainer(Container):
         super().__init__(**kwargs)
 
 
-class CENTERContainer(Container):
+class StrikeContainer(Container):
+    def __init__(self, **kwargs):
+        kwargs['strikethrough'] = True
+        super().__init__(**kwargs)
+
+
+class CenterContainer(Container):
     def __init__(self, **kwargs):
         kwargs['align'] = 'center'
         super().__init__(**kwargs)
@@ -100,3 +106,14 @@ class IMGContainer(Container):
 class BUTTONContainer(Container):
     # TODO
     pass
+
+
+class ListContainer(Container):
+    pass
+
+
+class LIContainer(Container):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_child(TextContainer(text=' - '))
+        # self.font_settings['prepend'] = '\t- '

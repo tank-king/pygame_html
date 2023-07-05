@@ -1,20 +1,9 @@
-from html.parser import HTMLParser
 import importlib
+import os.path
+from html.parser import HTMLParser
 
-from pygame_html.container import *
 from pygame_html.container_definitions import *
 
-
-# class MyHTMLParser(HTMLParser):
-#     def handle_starttag(self, tag, attrs):
-#         print("Encountered a start tag:", tag)
-#
-#     def handle_endtag(self, tag):
-#         print("Encountered an end tag :", tag)
-#
-#     def handle_data(self, data):
-#         print("Encountered some data  :", data)
-#
 
 class GUIWindow(BaseStructure, HTMLParser):
     def __init__(self, width, height):
@@ -22,10 +11,6 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.root: Container = Container(width=width, height=height)
         self.root.window = self
         self.root.label = 'root'
-        # self.root.move((50, 50))
-        # self.root.set_pos((100, 100))
-        # print(self.root.get_capped_width())
-        # self.root.align = 'right'
         self.stack = [self.root]
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -38,7 +23,6 @@ class GUIWindow(BaseStructure, HTMLParser):
     def handle_endtag(self, tag: str):
         if self.stack:
             self.stack.pop()
-        # self.stack.pop() if self.stack else True
 
     def handle_data(self, data: str):
         data = data.strip()
@@ -57,7 +41,8 @@ class GUIWindow(BaseStructure, HTMLParser):
             container.label = 'text_container'
             parent.add_child(container)
 
-    def get_container_from_tag(self, tag, attrs):
+    @staticmethod
+    def get_container_from_tag(tag, attrs):
         tag = tag.lower()
         lib = importlib.import_module('pygame_html.container_definitions')
         for i in dir(lib):
@@ -69,6 +54,8 @@ class GUIWindow(BaseStructure, HTMLParser):
         return Container(**attrs)
 
     def load_from_html(self, file):
+        if not os.path.isfile(file):
+            return
         self.root.children.clear()
         with open(file, 'r') as f:
             data = f.read().strip().replace('\n', '')
@@ -85,12 +72,6 @@ class GUIWindow(BaseStructure, HTMLParser):
         for i in container.children:
             self.recursive_children(i, indent + 10)
 
-    # def set_layout(self, parent: Container, element: Element):
-    #     for child in element:
-    #         cont = self.create_gui_container(child)
-    #         self.set_layout(cont, child)
-    #         parent.add_child(cont)
-
     def update(self, events: list[pygame.event.Event], dt=1.0):
         self.root.update(events, dt)
         # print(self.root.effective_rect)
@@ -100,28 +81,55 @@ class GUIWindow(BaseStructure, HTMLParser):
 
 
 class GUIManager(BaseStructure):
-    def __init__(self):
+    def __init__(self, auto_resize=True):
+        self.auto_resize = auto_resize
         self.window: Optional[GUIWindow] = None
-        self.queued_windows = ['sample.html']
+        self.queued_windows = []
+        self.current_window = ''
+        self.minimized = False
 
-    def display_popup(self, file_name):
+    def queue_popup(self, file_name):
         self.queued_windows.append(file_name)
 
+    def load_popup(self, file_name):
+        self.current_window = file_name
+        self.window.load_from_html(file_name)
+
+    def minimize(self):
+        self.minimized = True
+
+    def restore(self):
+        self.minimized = False
+
+    @staticmethod
+    def set_font_config(**kwargs):
+        for i, j in kwargs.items():
+            if i in FontEngine.DEFAULTS:
+                FontEngine.DEFAULTS[i] = j
+
     def close_popup(self):
-        # to be used externally
         if self.window:
             self.window = None
 
     def update(self, events: list[pygame.event.Event], dt=1.0):
+        if self.minimized:
+            return
+        for e in events:
+            if e.type == pygame.WINDOWRESIZED:
+                if self.auto_resize:
+                    self.window = GUIWindow(e.x, e.y)
+                    self.window.load_from_html(self.current_window)
         if self.window:
             self.window.update(events, dt)
         else:
             if self.queued_windows:
                 self.window = GUIWindow(*pygame.display.get_surface().get_size())
-                # self.window = GUIWindow(0, 0)
-                self.window.load_from_html(self.queued_windows.pop(0))
+                self.current_window = self.queued_windows.pop(0)
+                self.window.load_from_html(self.current_window)
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
+        if self.minimized:
+            return
         if self.window:
             self.window.draw(surf, offset)
             # pygame.draw.rect(pygame.display.get_surface(), 'red', self.window.root.rect, 10)
