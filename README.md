@@ -1,6 +1,13 @@
 # pygame_html
 
-A pygbag-compatible utility library for rendering HTML documents in python
+A [pygbag](https://github.com/pygame-web/pygbag)-compatible utility library for rendering HTML documents in python
+
+## Contents
+
+- [Why use this library](#why-use-this-library)
+- [Supported HTML features](#supported-html-features)
+- [How to Use](#how-to-use)
+- [Specific Tags explained](#details-about-selected-tags)
 
 ## Why use this library?
 
@@ -139,3 +146,12 @@ but not their individual letters. Words longer than entire display window needs 
 to work.
 
 ### 
+
+## functions and methods
+### class `GUIManager`
+
+```python
+def queue_popup() -> None
+```
+
+### TODO add more details to README
