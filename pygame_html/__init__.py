@@ -1,1 +1,1 @@
-from gui import GUIManager
+from .gui import GUIManager
