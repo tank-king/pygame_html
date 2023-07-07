@@ -22,6 +22,36 @@ class TextContainer(Container):
         surf.blit(text, text.get_rect(topleft=self.rect.topleft))
 
 
+class HTMLContainer(Container):
+    pass
+
+
+class BodyContainer(Container):
+    pass
+
+
+class HeadContainer(Container):
+    pass
+
+
+class H1Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.DEFAULTS['size'] + 15
+        super().__init__(**kwargs)
+
+
+class H2Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.DEFAULTS['size'] + 10
+        super().__init__(**kwargs)
+
+
+class H3Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.DEFAULTS['size'] + 5
+        super().__init__(**kwargs)
+
+
 class BContainer(Container):
     def __init__(self, **kwargs):
         kwargs['bold'] = True
