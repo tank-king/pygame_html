@@ -124,7 +124,7 @@ class GUIManager(BaseStructure):
             for e in events:
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
-                        quit()
+                        return
             surf.fill(0)
             manager.update(events)
             manager.draw(surf)
