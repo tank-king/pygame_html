@@ -199,17 +199,6 @@ class Container(BaseStructure):
             if not self.capped_height:
                 self.height = self.effective_rect.height
 
-
-        def f(cont):
-            for i in cont.children:
-                f(i)
-                if i.label in ['body', 'html', 'p', 'center']:
-                    if i.parent:
-                        i.width = i.parent.width
-
-
-        # f(self)
-
         # TODO temporary fix as original HTML parsing is different than this GUI system
         if self.align != 'left' or True:
             if self.label in ['body', 'html', 'center', 'p']:
@@ -217,15 +206,6 @@ class Container(BaseStructure):
                     print(self.parent, self)
                     # self.root
                     self.width = self.parent.width
-
-
-        # # TODO temporary fix as original HTML parsing is different than this GUI system
-        # if self.align != 'left' or True:
-        #     if self.label in ['body', 'html', 'center', 'p']:
-        #         if self.parent:
-        #             print(self.parent, self)
-        #             # self.root
-        #             self.width = self.root.width
 
         for i in line_containers:
             if not i:
