@@ -10,11 +10,13 @@ from pygame_html.container_definitions import *
 
 
 class GUIWindow(BaseStructure, HTMLParser):
-    def __init__(self, width, height):
+    def __init__(self, width, height, offset=None):
         super().__init__()
         self.root: Container = Container(width=width, height=height)
         self.root.window = self
         self.root.label = 'root'
+        if offset:
+            self.root.move(offset)
         self.stack = [self.root]
         self.ignore_stack = []
         self.base_path = ''
@@ -142,7 +144,7 @@ class GUIManager(BaseStructure):
         self.minimized = False
 
     @staticmethod
-    def run_until_close(file_name, size=None, fps=60):
+    def run_until_close(file_name, size=None, offset=None, fps=60):
         manager = GUIManager()
         manager.load_popup(file_name, size)
         surf = pygame.display.get_surface()
@@ -162,12 +164,12 @@ class GUIManager(BaseStructure):
     def queue_popup(self, file_name):
         self.queued_windows.append(file_name)
 
-    def load_popup(self, file_name, size=None):
+    def load_popup(self, file_name, size=None, offset=None):
         if not size:
             size = pygame.display.get_surface().get_size()
         self.queued_windows.clear()
         self.current_window = ''
-        self.window = GUIWindow(*size)
+        self.window = GUIWindow(*size, offset)
         self.current_window = file_name
         self.window.load_from_html(file_name)
 
