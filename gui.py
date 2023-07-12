@@ -43,6 +43,8 @@ class GUIWindow(BaseStructure, HTMLParser):
         if tag not in self_closing_tags:
             self.stack.append(container)
         parent.add_child(container)
+        # if tag in self_closing_tags:
+        #     self.handle_endtag(tag)
 
     def handle_endtag(self, tag: str):
         tag = tag.lower()
@@ -55,7 +57,21 @@ class GUIWindow(BaseStructure, HTMLParser):
             self.handle_startendtag('br', [])
 
     def handle_data(self, data: str):
+        if self.stack and self.stack[-1].label == 'pre':
+            lines = data.split('\n')
+            if lines and not lines[-1]:
+                lines.pop()
+            parent = self.stack[-1] if self.stack else self.root
+            for i in lines:
+                settings = parent.font_settings
+                settings['text'] = i
+                container = TextContainer(**settings)
+                container.label = 'text_container'
+                parent.add_child(container)
+                parent.add_child(BRContainer())
+            return
         data = data.strip()
+        data = data.replace('\n', ' ')
         data = re.sub('[ ]+', ' ', data)
         if not data:
             return
@@ -94,7 +110,7 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.base_path = path.parent.absolute()
         self.root.children.clear()
         with open(file, 'r', encoding='utf-8') as f:
-            data = f.read().strip().replace('\n', ' ')
+            data = f.read().strip().replace('\n', '\n')
 
             # data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
             # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)

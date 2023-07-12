@@ -183,6 +183,12 @@ class PContainer(Container):
         super().__init__(**kwargs)
 
 
+class PreContainer(Container):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.font_settings['font'] = 'consolas'
+
+
 class StrikeContainer(Container):
     def __init__(self, **kwargs):
         kwargs['strikethrough'] = True

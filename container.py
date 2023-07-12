@@ -40,18 +40,12 @@ class Container(BaseStructure):
         self.capped_height = height
         self.pos_type = 'relative'  # or absolute
         self.align = 'left'
-        self.content_align = 'topleft'
         self.parent: Optional['Container'] = None
         self.attributes = {}
-        self.line_containers = [[]]
         self.setup()
-        # self.pos = self.position
         self.init_kwargs = kwargs
         for i, j in kwargs.items():
-            # if i == 'align':
-            #     print(self.align, 'before')
             self.__setattr__(i, j)
-            # print(self.align, 'after')
 
     def __repr__(self):
         return f'<Container(label = {self.label})'
@@ -114,13 +108,8 @@ class Container(BaseStructure):
 
     def move(self, d_pos):
         self.pos += d_pos
-        # self.rearrange_layout()
         for i in self.children:
             i.pos += d_pos
-        # for i in self.children:
-        #     i.rearrange_layout()
-        # self.rearrange_layout()
-        # i.move(d_pos)
 
     def get_capped_width(self):
         if self.children:
@@ -143,13 +132,7 @@ class Container(BaseStructure):
 
     def set_parent(self, parent: 'Container'):
         self.parent = parent
-        # self.pos = self.position
         self.override_font_settings_from_parent()
-        # if parent.capped_width and parent.capped_height:
-        #     self.capped_width = parent.capped_width
-        #     self.capped_height = parent.capped_height
-        # if self.parent and hasattr(self.parent, 'font_settings'):
-        #     self.override_defaults_from_dict(self.parent.font_settings, self.font_settings)
         self.setup()
 
     def set_pos(self, pos):
@@ -159,9 +142,6 @@ class Container(BaseStructure):
     def add_child(self, child: 'Container'):
         self.children.append(child)
         child.set_parent(self)
-        # self.rearrange_layout()
-        # if self.parent:
-        #     self.parent.rearrange_layout()
 
     def rearrange_layout(self):
         cursor = self.pos + pygame.Vector2()
@@ -203,19 +183,13 @@ class Container(BaseStructure):
         if self.align != 'left' or True:
             if self.label in ['body', 'html', 'center', 'p']:
                 if self.parent:
-                    print(self.parent, self)
-                    # self.root
                     self.width = self.parent.width
 
         for i in line_containers:
             if not i:
                 continue
-            for j in i:
-                if j.label == 'center':
-                    print(j, self.parent)
             w = sum(j.width for j in i)
             align = self.align
-            print([j.font_settings['text'] for j in i]) if align == 'center' else ''
             if align == 'center':
                 d = self.rect.size[0] / 2 - w / 2
             elif align == 'right':
@@ -246,9 +220,9 @@ class Container(BaseStructure):
 
 
 class BRContainer(Container):
-    def __init__(self):
+    def __init__(self, height=None):
         font_size = FontEngine.DEFAULTS['size']
-        super().__init__(0, font_size, label='br')
+        super().__init__(0, font_size if not height else height, label='br')
 
 
 class EmptyContainer(Container):
