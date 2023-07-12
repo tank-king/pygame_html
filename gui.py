@@ -1,10 +1,11 @@
 import importlib
 import os.path
-from html.parser import HTMLParser
+import re
 from pathlib import Path
 
 import pygame.event
 
+from html.parser import HTMLParser
 from pygame_html.container_definitions import *
 
 
@@ -31,9 +32,13 @@ class GUIWindow(BaseStructure, HTMLParser):
             exists = True
         if not exists or self.ignore_stack:
             self.ignore_stack.append(tag)
+            print(tag, self.ignore_stack)
             return
+        # print(self.stack)
         container = self.get_container_from_tag(tag, dict(attrs))
         container.label = tag
+        if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
+            self.handle_startendtag('br', [])
         self.stack.append(container)
         parent.add_child(container)
 
@@ -44,9 +49,12 @@ class GUIWindow(BaseStructure, HTMLParser):
             return
         if self.stack:
             self.stack.pop()
+        if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
+            self.handle_startendtag('br', [])
 
     def handle_data(self, data: str):
         data = data.strip()
+        data = re.sub('[ ]+', ' ', data)
         if not data:
             return
         if self.ignore_stack:
@@ -71,10 +79,10 @@ class GUIWindow(BaseStructure, HTMLParser):
             attrs['src'] = os.path.join(self.base_path, attrs['src'])
         for i in dir(lib):
             if i.endswith('Container'):
-                if i.rstrip('Container').lower() == tag:
+                # print(i[:-len('Container')].lower())
+                if i[:-len('Container')].lower() == tag:
                     return getattr(lib, i)(**attrs)
-        if tag == 'br':
-            return BRContainer()
+        print(tag)
         return Container(**attrs)
 
     def load_from_html(self, file):
@@ -82,15 +90,15 @@ class GUIWindow(BaseStructure, HTMLParser):
             return
         self.base_path = Path(file).parent.absolute()
         self.root.children.clear()
-        with open(file, 'r') as f:
-            data = f.read().strip().replace('\n', '')
+        with open(file, 'r', encoding='utf-8') as f:
+            data = f.read().strip().replace('\n', ' ')
+            data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
+            data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
             # print(data)
         self.feed(data)
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
         self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
-        # self.root.rearrange_layout()
-        # self.recursive_children(self.root)
 
     def recursive_children(self, container: Container, indent=0):
         print(' ' * indent, container)
@@ -114,9 +122,9 @@ class GUIManager(BaseStructure):
         self.minimized = False
 
     @staticmethod
-    def run_until_close(file_name):
+    def run_until_close(file_name, size=None, fps=60):
         manager = GUIManager()
-        manager.load_popup(file_name)
+        manager.load_popup(file_name, size)
         surf = pygame.display.get_surface()
         clock = pygame.time.Clock()
         while True:
@@ -129,15 +137,17 @@ class GUIManager(BaseStructure):
             manager.update(events)
             manager.draw(surf)
             pygame.display.update()
-            clock.tick(60)
+            clock.tick(fps)
 
     def queue_popup(self, file_name):
         self.queued_windows.append(file_name)
 
-    def load_popup(self, file_name):
+    def load_popup(self, file_name, size=None):
+        if not size:
+            size = pygame.display.get_surface().get_size()
         self.queued_windows.clear()
         self.current_window = ''
-        self.window = GUIWindow(*pygame.display.get_surface().get_size())
+        self.window = GUIWindow(*size)
         self.current_window = file_name
         self.window.load_from_html(file_name)
 
@@ -168,11 +178,6 @@ class GUIManager(BaseStructure):
                     self.window.load_from_html(self.current_window)
         if self.window:
             self.window.update(events, dt)
-        # else:
-        #     if self.queued_windows:
-        #         self.window = GUIWindow(*pygame.display.get_surface().get_size())
-        #         self.current_window = self.queued_windows.pop(0)
-        #         self.window.load_from_html(self.current_window)
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         if self.minimized:

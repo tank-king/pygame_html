@@ -1,2 +1,2 @@
 FONT = 'consolas'
-DEBUG = True
+DEBUG = False

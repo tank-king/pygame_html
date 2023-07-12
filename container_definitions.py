@@ -36,19 +36,42 @@ class HeadContainer(Container):
 
 class H1Container(Container):
     def __init__(self, **kwargs):
-        kwargs['size'] = FontEngine.DEFAULTS['size'] + 15
+        kwargs['size'] = FontEngine.get_font_size(2)
+        kwargs['bold'] = True
         super().__init__(**kwargs)
 
 
 class H2Container(Container):
     def __init__(self, **kwargs):
-        kwargs['size'] = FontEngine.DEFAULTS['size'] + 10
+        kwargs['size'] = FontEngine.get_font_size(1.5)
+        kwargs['bold'] = True
         super().__init__(**kwargs)
 
 
 class H3Container(Container):
     def __init__(self, **kwargs):
-        kwargs['size'] = FontEngine.DEFAULTS['size'] + 5
+        kwargs['size'] = FontEngine.get_font_size(1.17)
+        kwargs['bold'] = True
+        super().__init__(**kwargs)
+
+
+class H4Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.get_font_size(1)
+        kwargs['bold'] = True
+        super().__init__(**kwargs)
+
+
+class H5Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.get_font_size(0.83)
+        kwargs['bold'] = True
+        super().__init__(**kwargs)
+
+
+class H6Container(Container):
+    def __init__(self, **kwargs):
+        kwargs['size'] = FontEngine.get_font_size(0.67)
         super().__init__(**kwargs)
 
 
@@ -73,12 +96,17 @@ class StrikeContainer(Container):
 class CenterContainer(Container):
     def __init__(self, **kwargs):
         kwargs['align'] = 'center'
+        print('centteerrr')
         super().__init__(**kwargs)
+        self.align = 'center'
 
 
 class PContainer(Container):
     BEFORE_APPEND = [['BRContainer', {}]]
     AFTER_APPEND = [['BRContainer', {}]]
+    def __init__(self, **kwargs):
+        print(kwargs)
+        super().__init__(**kwargs)
 
 
 class AContainer(Container):
@@ -86,6 +114,7 @@ class AContainer(Container):
         kwargs['underline'] = True
         self.href = ''
         super().__init__(**kwargs)
+        self.current_color = self.font_settings['color']
 
     def on_link_pressed(self):
         try:
@@ -100,8 +129,7 @@ class AContainer(Container):
                 if e.button == 1:
                     if self.selected and self.href:
                         self.on_link_pressed()
-        # current = self.font_settings['color']
-        self.font_settings['color'] = 'magenta' if self.selected else 'white'
+        self.font_settings['color'] = 'orange' if self.selected else 'blue'
         for i in self.children:
             if isinstance(i, TextContainer):
                 i.font_settings['color'] = self.font_settings['color']
@@ -129,7 +157,7 @@ class IMGContainer(Container):
             w = self.width if self.width else self.image.get_width()
             h = self.height if self.height else self.image.get_height()
             if self.image.get_size() != (w, h):
-                self.image_to_render = pygame.transform.scale(self.image, (w, h))
+                self.image_to_render = pygame.transform.smoothscale(self.image, (w, h))
             surf.blit(self.image_to_render, [*self.pos])
 
 

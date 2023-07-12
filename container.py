@@ -47,7 +47,10 @@ class Container(BaseStructure):
         # self.pos = self.position
         self.init_kwargs = kwargs
         for i, j in kwargs.items():
+            # if i == 'align':
+            #     print(self.align, 'before')
             self.__setattr__(i, j)
+            # print(self.align, 'after')
 
     def __repr__(self):
         return f'<Container(label = {self.label})'
@@ -159,28 +162,6 @@ class Container(BaseStructure):
         # if self.parent:
         #     self.parent.rearrange_layout()
 
-    def adjust_contents_according_to_alignment(self, align=None):
-        return
-        if not align:
-            try:
-                self.rect.__getattribute__(self.content_align)
-            except AttributeError:
-                self.content_align = 'center'
-            align = self.content_align
-        align = 'topleft'
-        rect1 = pygame.Rect(0, 0, *self.rect.size)
-        rect2 = pygame.Rect(0, 0, *self.effective_rect.size)
-        d_pos = Vector2(rect1.__getattribute__(align)) - Vector2(rect2.__getattribute__(align))
-        # d_pos -= Vector2(*rect2.size) / 4
-        # self.set_pos(d_pos)
-        for i in self.children:
-            i.move(d_pos)
-            # i.move(d_pos)
-        # for i in self.children:
-        #     i.move(Vector2(10, 0))
-        # for i in self.children:
-        #     i.adjust_contents_according_to_alignment()
-
     def rearrange_layout(self):
         cursor = self.pos + pygame.Vector2()
         lines = [[0, 0]]
@@ -208,11 +189,7 @@ class Container(BaseStructure):
             self.effective_rect = pygame.Rect(*self.pos, max([row[0] for row in lines]),
                                               sum([row[1] for row in lines]))
 
-        flag = False
-        if self.effective_rect.width > self.width:
-            flag = True
         size_less = self.effective_rect.w < self.width or self.effective_rect.h < self.height
-        # size_less = False
         self.width = max(self.width, self.effective_rect.width)
         self.height = max(self.height, self.effective_rect.height)
         if size_less:
@@ -220,27 +197,34 @@ class Container(BaseStructure):
                 self.width = self.effective_rect.width
             if not self.capped_height:
                 self.height = self.effective_rect.height
-        # self.adjust_contents_according_to_alignment()
-        # if flag:
-        #     self.rearrange_layout()
 
-        # if self.label == 'root':
-        #     print(self.effective_rect)
-        #     print(line_containers)
-        # self.align = 'center'
+        # TODO temporary fix as original HTML parsing is different than this GUI system
+        if self.align != 'left' or True:
+            if self.label in ['body', 'html', 'center', 'p']:
+                if self.parent:
+                    # self.root
+                    self.width = self.root.width
+
         for i in line_containers:
+            if not i:
+                continue
+            for j in i:
+                if j.label == 'center':
+                    print(j, self.parent)
             w = sum(j.width for j in i)
-            if self.align == 'center':
+            align = self.align
+            print([j.font_settings['text'] for j in i]) if align == 'center' else ''
+            if align == 'center':
                 d = self.rect.size[0] / 2 - w / 2
-            elif self.align == 'right':
+            elif align == 'right':
                 d = self.rect.size[0] - w
             else:
                 d = 0
-            # if i:
-            #     index = self.children.index(i[0])
-            #     self.children.insert(index, EmptyContainer(width=d))
             for j in i:
                 j.move(Vector2(d, 0))
+
+    def set_alignment(self):
+        pass
 
     def update(self, events: list[pygame.event.Event], dt=1.0):
         for i in self.children:
@@ -249,10 +233,10 @@ class Container(BaseStructure):
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         if DEBUG:
             if self.selected:
-                color = 'blue'
+                color = 'red'
             else:
-                color = 'white'
-            # pygame.draw.rect(surf, color, self.rect.move(offset), 1)
+                color = 'black'
+            pygame.draw.rect(surf, color, self.rect.move(offset), 1)
         for i in self.children:
             i.draw(surf, offset)
         # pygame.draw.rect(pygame.display.get_surface(), 'red', self.effective_rect.inflate(5, 5), 10)

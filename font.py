@@ -20,9 +20,10 @@ from functools import lru_cache
 
 
 class FontEngine:
+    DEFAULT_FONT_SIZE = 16  # 16 em is the base font size for HTML rendering
     DEFAULTS = {
-        'font': 'consolas',
-        'size': 30,
+        'font': 'times new roman',
+        'size': 16,
         'bold': False,
         'italic': False,
         'underline': False,
@@ -30,10 +31,14 @@ class FontEngine:
         'wraplength': 0,
         'text': '',
         'antialias': True,
-        'color': 'white',
+        'color': 'black',
         'prepend': '',
         'append': ''
     }
+
+    @staticmethod
+    def get_font_size(em):
+        return FontEngine.DEFAULT_FONT_SIZE * em
 
     @staticmethod
     @lru_cache(maxsize=100)
@@ -48,11 +53,12 @@ class FontEngine:
 
     @staticmethod
     @lru_cache(maxsize=100)
-    def get_text(font, text, antialias, color, size, bold, italic, underline, strikethrough, wraplength=0, prepend='', append=''):
+    def get_text(font, text, antialias, color, size, bold, italic, underline, strikethrough, wraplength=0, prepend='',
+                 append=''):
         font = FontEngine.get_font(font, size, bold, italic, underline, strikethrough)
         text = prepend + text + append
         text = text.replace('\t', '    ')  # convert tabs to 4 spaces
-        return font.render(text, antialias, color, None, wraplength)
+        return font.render(text, antialias, color)
 
     @staticmethod
     def generate_text(**kwargs):
