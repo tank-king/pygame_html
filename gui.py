@@ -39,7 +39,9 @@ class GUIWindow(BaseStructure, HTMLParser):
         container.label = tag
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
             self.handle_startendtag('br', [])
-        self.stack.append(container)
+        self_closing_tags = ['img', 'hr', 'br']
+        if tag not in self_closing_tags:
+            self.stack.append(container)
         parent.add_child(container)
 
     def handle_endtag(self, tag: str):
@@ -86,14 +88,16 @@ class GUIWindow(BaseStructure, HTMLParser):
         return Container(**attrs)
 
     def load_from_html(self, file):
-        if not os.path.isfile(file):
+        path = Path(file)
+        if not os.path.isfile(path):
             return
-        self.base_path = Path(file).parent.absolute()
+        self.base_path = path.parent.absolute()
         self.root.children.clear()
         with open(file, 'r', encoding='utf-8') as f:
             data = f.read().strip().replace('\n', ' ')
-            data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
-            data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
+
+            # data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
+            # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
             # print(data)
         self.feed(data)
         # TODO temporary fix
