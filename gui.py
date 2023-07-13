@@ -15,8 +15,7 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.root: Container = Container(width=width, height=height)
         self.root.window = self
         self.root.label = 'root'
-        if offset:
-            self.root.move(offset)
+        self.window_offset = offset
         self.stack = [self.root]
         self.ignore_stack = []
         self.base_path = ''
@@ -105,14 +104,28 @@ class GUIWindow(BaseStructure, HTMLParser):
         print(tag)
         return Container(**attrs)
 
+    def offset_root_window(self):
+        self.root.set_pos((0, 0))
+        if self.window_offset is None:
+            return
+        if type(self.window_offset) == str:
+            rect = pygame.Rect(*self.root.pos, self.root.width, self.root.height)
+            display_rect = pygame.display.get_surface().get_rect()
+            try:
+                rect.__setattr__(self.window_offset, display_rect.__getattribute__(self.window_offset))
+                self.root.move(rect.topleft)
+            except pygame.error:
+                pass
+
     def load_from_html(self, file):
-        path = Path(file)
+        path = Path(self.base_path) / file
         if not os.path.isfile(path):
             return
-        self.base_path = path.parent.absolute()
+        self.base_path = path.parent
         self.root.children.clear()
-        with open(file, 'r', encoding='utf-8') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             data = f.read().strip().replace('\n', '\n')
+            print(data)
 
             # data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
             # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
@@ -121,6 +134,7 @@ class GUIWindow(BaseStructure, HTMLParser):
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
         self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
+        self.offset_root_window()
 
     def recursive_children(self, container: Container, indent=0):
         print(' ' * indent, container)
@@ -146,16 +160,18 @@ class GUIManager(BaseStructure):
     @staticmethod
     def run_until_close(file_name, size=None, offset=None, fps=60):
         manager = GUIManager()
-        manager.load_popup(file_name, size)
+        manager.load_popup(file_name, size, offset)
         surf = pygame.display.get_surface()
         clock = pygame.time.Clock()
         while True:
             events = pygame.event.get()
             for e in events:
+                if e.type == pygame.QUIT:
+                    return
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
                         return
-            surf.fill(0)
+            surf.fill('white')
             manager.update(events)
             manager.draw(surf)
             pygame.display.update()
