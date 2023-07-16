@@ -33,9 +33,9 @@ class GUIWindow(BaseStructure, HTMLParser):
             exists = True
         if not exists or self.ignore_stack:
             self.ignore_stack.append(tag)
-            print(tag, self.ignore_stack)
+            debug_print(tag, self.ignore_stack)
             return
-        # print(self.stack)
+        # debug_print(self.stack)
         container = self.get_container_from_tag(tag, dict(attrs))
         container.label = tag
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
@@ -98,10 +98,10 @@ class GUIWindow(BaseStructure, HTMLParser):
             attrs['src'] = os.path.join(self.base_path, attrs['src'])
         for i in dir(lib):
             if i.endswith('Container'):
-                # print(i[:-len('Container')].lower())
+                # debug_print(i[:-len('Container')].lower())
                 if i[:-len('Container')].lower() == tag:
                     return getattr(lib, i)(**attrs)
-        print(tag)
+        debug_print(tag)
         return Container(**attrs)
 
     def offset_root_window(self):
@@ -125,11 +125,11 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.root.children.clear()
         with open(path, 'r', encoding='utf-8') as f:
             data = f.read().strip().replace('\n', '\n')
-            print(data)
+            debug_print(data)
 
             # data = re.sub('<[ ]*br[ ]*>', '<br/>', data)
             # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
-            # print(data)
+            # debug_print(data)
         self.feed(data)
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
@@ -137,13 +137,13 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.offset_root_window()
 
     def recursive_children(self, container: Container, indent=0):
-        print(' ' * indent, container)
+        debug_print(' ' * indent, container)
         for i in container.children:
             self.recursive_children(i, indent + 10)
 
     def update(self, events: list[pygame.event.Event], dt=1.0):
         self.root.update(events, dt)
-        # print(self.root.effective_rect)
+        # debug_print(self.root.effective_rect)
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         self.root.draw(surf, offset)

@@ -30,12 +30,12 @@ class AContainer(Container):
         self.current_color = self.font_settings['color']
 
     def on_link_pressed(self):
-        print('select')
+        debug_print('select')
         try:
             self.root.window.load_from_html(self.href)
         except Exception as e:
             _ = e
-            print(e)
+            debug_print(e)
 
     @property
     def selected(self):
@@ -72,7 +72,7 @@ class ButtonContainer(Container):
 class CenterContainer(Container):
     def __init__(self, **kwargs):
         kwargs['align'] = 'center'
-        print('centteerrr')
+        debug_print('centteerrr')
         super().__init__(**kwargs)
         self.align = 'center'
 
@@ -179,7 +179,7 @@ class PContainer(Container):
     AFTER_APPEND = [['BRContainer', {}]]
 
     def __init__(self, **kwargs):
-        print(kwargs)
+        debug_print(kwargs)
         super().__init__(**kwargs)
 
 
