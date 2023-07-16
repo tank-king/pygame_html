@@ -1,4 +1,8 @@
 from .gui import GUIManager, GUIWindow
+import sys
+from pathlib import Path
+
+# sys.path.append(Path(__file__).absolute().__str__())
 
 
 def set_default_html_folder_path(path):
