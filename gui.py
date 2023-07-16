@@ -248,7 +248,9 @@ class GUIManager(BaseStructure):
         for e in events:
             if e.type == pygame.WINDOWRESIZED:
                 if self.auto_resize:
-                    self.window = GUIWindow(e.x, e.y)
+                    self.window = GUIWindow(
+                        e.x if not self.window.root.capped_width else self.window.root.capped_width, e.y
+                    )
                     self.window.load_from_html(self.current_window)
         if self.window:
             self.window.update(events, dt)

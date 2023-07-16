@@ -1,5 +1,5 @@
 FONT = 'consolas'
-DEBUG = True
+DEBUG = False
 
 
 def debug_print(*args):
