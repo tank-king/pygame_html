@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os.path
 import re
@@ -10,6 +11,8 @@ from pygame_html.container_definitions import *
 
 
 class GUIWindow(BaseStructure, HTMLParser):
+    base_path = ''
+
     def __init__(self, width, height, offset=None):
         super().__init__()
         self.root: Container = Container(width=width, height=height)
@@ -18,7 +21,13 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.window_offset = offset
         self.stack = [self.root]
         self.ignore_stack = []
-        self.base_path = ''
+
+    @classmethod
+    def configure_html_folder(cls, path):
+        if Path(path).exists():
+            cls.base_path = path
+        else:
+            debug_print('WARNING: ' + path + ' does not exist')
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
@@ -110,18 +119,21 @@ class GUIWindow(BaseStructure, HTMLParser):
             return
         if type(self.window_offset) == str:
             rect = pygame.Rect(*self.root.pos, self.root.width, self.root.height)
-            display_rect = pygame.display.get_surface().get_rect()
+            display_rect = pygame.display.get_surface().get_rect().copy()
             try:
                 rect.__setattr__(self.window_offset, display_rect.__getattribute__(self.window_offset))
                 self.root.move(rect.topleft)
+                # print(rect.topleft, self.root.pos, self.root.children[-1].pos)
             except pygame.error:
                 pass
+        else:
+            self.root.move(self.window_offset)
 
     def load_from_html(self, file):
         path = Path(self.base_path) / file
         if not os.path.isfile(path):
             return
-        self.base_path = path.parent
+        # self.base_path = path.parent
         self.root.children.clear()
         with open(path, 'r', encoding='utf-8') as f:
             data = f.read().strip().replace('\n', '\n')
@@ -131,10 +143,10 @@ class GUIWindow(BaseStructure, HTMLParser):
             # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
             # debug_print(data)
         self.feed(data)
+        self.offset_root_window()
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
         self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
-        self.offset_root_window()
 
     def recursive_children(self, container: Container, indent=0):
         debug_print(' ' * indent, container)
@@ -158,7 +170,7 @@ class GUIManager(BaseStructure):
         self.minimized = False
 
     @staticmethod
-    def run_until_close(file_name, size=None, offset=None, fps=60):
+    async def run_until_close(file_name, size=None, offset=None, fps=60):
         manager = GUIManager()
         manager.load_popup(file_name, size, offset)
         surf = pygame.display.get_surface()
@@ -174,6 +186,7 @@ class GUIManager(BaseStructure):
             surf.fill('white')
             manager.update(events)
             manager.draw(surf)
+            await asyncio.sleep(0)
             pygame.display.update()
             clock.tick(fps)
 
