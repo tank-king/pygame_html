@@ -29,6 +29,19 @@ class GUIWindow(BaseStructure, HTMLParser):
         else:
             debug_print('WARNING: ' + path + ' does not exist')
 
+
+    def parse_css(self, css: str):
+        kwargs = {}
+        lines = css.split(';')
+        lines = [i for i in lines if i]
+        for i in lines:
+            key, value, *_ = i.split(':')
+            if _:
+                # possibly invalid css with more syntax a : b : c
+                continue
+            kwargs[key] = value
+        return kwargs
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         parent = self.stack[-1] if self.stack else self.root
@@ -45,7 +58,15 @@ class GUIWindow(BaseStructure, HTMLParser):
             debug_print(tag, self.ignore_stack)
             return
         # debug_print(self.stack)
-        container = self.get_container_from_tag(tag, dict(attrs))
+        kwargs = {}
+        for i in attrs:
+            if i[0] is not None and i[1] is not None:
+                kwargs[i[0]] = i[1]
+            if i[0] == 'style':
+                if i[1]:
+                    for key, value in self.parse_css(i[1]).items():
+                        kwargs[key] = value
+        container = self.get_container_from_tag(tag, kwargs)
         container.label = tag
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
             self.handle_startendtag('br', [])
