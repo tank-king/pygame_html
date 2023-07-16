@@ -61,11 +61,11 @@ class GUIWindow(BaseStructure, HTMLParser):
         kwargs = {}
         for i in attrs:
             if i[0] is not None and i[1] is not None:
-                kwargs[i[0]] = i[1]
-            if i[0] == 'style':
-                if i[1]:
+                if i[0] == 'style':
                     for key, value in self.parse_css(i[1]).items():
                         kwargs[key] = value
+                else:
+                    kwargs[i[0]] = i[1]
         container = self.get_container_from_tag(tag, kwargs)
         container.label = tag
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
@@ -73,6 +73,8 @@ class GUIWindow(BaseStructure, HTMLParser):
         self_closing_tags = ['img', 'hr', 'br']
         if tag not in self_closing_tags:
             self.stack.append(container)
+        if tag == 'pre':
+            parent.add_child(BRContainer())
         parent.add_child(container)
         # if tag in self_closing_tags:
         #     self.handle_endtag(tag)
