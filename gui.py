@@ -193,6 +193,26 @@ class GUIManager(BaseStructure):
         self.minimized = False
 
     @staticmethod
+    def run_until_close(file_name, size=None, offset=None, fps=60):
+        manager = GUIManager()
+        manager.load_popup(file_name, size, offset)
+        surf = pygame.display.get_surface()
+        clock = pygame.time.Clock()
+        while True:
+            events = pygame.event.get()
+            for e in events:
+                if e.type == pygame.QUIT:
+                    return
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_ESCAPE:
+                        return
+            surf.fill('white')
+            manager.update(events)
+            manager.draw(surf)
+            pygame.display.update()
+            clock.tick(fps)
+
+    @staticmethod
     async def async_run_until_close(file_name, size=None, offset=None, fps=60):
         manager = GUIManager()
         manager.load_popup(file_name, size, offset)
