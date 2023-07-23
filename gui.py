@@ -193,7 +193,7 @@ class GUIManager(BaseStructure):
         self.minimized = False
 
     @staticmethod
-    async def run_until_close(file_name, size=None, offset=None, fps=60):
+    async def async_run_until_close(file_name, size=None, offset=None, fps=60):
         manager = GUIManager()
         manager.load_popup(file_name, size, offset)
         surf = pygame.display.get_surface()
