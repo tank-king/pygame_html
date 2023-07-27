@@ -2,21 +2,21 @@ import pygame
 from functools import lru_cache
 
 
-# class STYLE:
-#     DEFAULTS = {
-#         'font-settings': {
-#             'font': 'consolas',
-#             'size': 30,
-#             'bold': False,
-#             'italic': False,
-#             'underline': False,
-#             'strikethrough': False,
-#             'wraplength': 0,
-#             'text': '',
-#             'antialias': True,
-#             'color': 'white'
-#         }
-#     }
+class STYLE:
+    DEFAULTS = {
+        'font-settings': {
+            'font': 'consolas',
+            'size': 30,
+            'bold': False,
+            'italic': False,
+            'underline': False,
+            'strikethrough': False,
+            'wraplength': 0,
+            'text': '',
+            'antialias': True,
+            'color': 'white'
+        }
+    }
 
 
 class FontEngine:

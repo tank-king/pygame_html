@@ -189,7 +189,8 @@ class GUIWindow(BaseStructure, HTMLParser):
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         # if self.window_offset:
-        #     pygame.draw.rect(surf, 'white', pygame.Rect(*self.window_offset, *self.root.size))
+        # pygame.draw.rect(surf, 'white', pygame.Rect(*self.window_offset, *self.root.size))
+        pygame.draw.rect(surf, 'white', self.root.rect)
         self.root.draw(surf, offset)
 
 
@@ -216,7 +217,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
                         return
-            surf.fill('white')
+            # surf.fill('white')
             manager.update(events)
             manager.draw(surf)
             pygame.display.update()

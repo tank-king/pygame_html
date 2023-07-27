@@ -45,6 +45,8 @@ class Container(BaseStructure):
         self.attributes = {}
         self.init_kwargs = kwargs
         for i, j in kwargs.items():
+            if self.__class__.__name__ == 'PContainer':
+                print(i, j)
             self.__setattr__(i, j)
 
     def __repr__(self):
@@ -62,9 +64,24 @@ class Container(BaseStructure):
             if i == 'text' and self.__class__.__name__ == 'TextContainer':
                 continue
             if i not in self.init_kwargs and not self.font_setting_overriden(i):
+                # if self.label == 'p':
+                    # print(i)
+                    # print(self.parent, self.align, self.parent.align)
                 self.__setattr__(i, self.get_override_from_parent(i))
             # if i == 'size':
             #     debug_print(self.label, i, self.get_override_from_parent(i))
+
+    def override_other_settings_from_parent(self):
+        pass
+
+    def get_overriden_align_from_parent(self):
+        if self.align != 'left' or not self.parent:
+            return self.align
+        else:
+            return self.parent.get_overriden_align_from_parent()
+
+    # def get_setting_overriden(self, setting):
+    #     return self.__getattribute__(setting) !=
 
     def font_setting_overriden(self, setting):
         return self.font_settings.get(setting) != FontEngine.DEFAULTS.get(setting)
@@ -149,6 +166,7 @@ class Container(BaseStructure):
     def set_parent(self, parent: 'Container'):
         self.parent = parent
         self.override_font_settings_from_parent()
+        self.align = self.get_overriden_align_from_parent()
         self.setup()
 
     def set_pos(self, pos):
