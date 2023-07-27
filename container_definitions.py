@@ -1,6 +1,7 @@
 import pygame.image
 
-from .container import *
+from pygame_html.container import *
+from pygame_html.event import QUIT_EVENT
 
 
 class TextContainer(Container):
@@ -34,6 +35,8 @@ class AContainer(Container):
 
     def on_link_pressed(self):
         debug_print('select')
+        if self.href.lower() == '__exit__':
+            pygame.event.post(pygame.Event(QUIT_EVENT, {'anchor': self}))
         try:
             self.root.window.load_from_html(self.href)
         except Exception as e:

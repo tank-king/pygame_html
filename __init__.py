@@ -1,5 +1,5 @@
-from .gui import GUIManager, GUIWindow
-from .config import Config
+from pygame_html.gui import GUIManager, GUIWindow
+from pygame_html.config import Config
 import sys
 from pathlib import Path
 

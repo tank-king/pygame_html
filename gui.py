@@ -8,6 +8,7 @@ import pygame.event
 
 from html.parser import HTMLParser
 from pygame_html.container_definitions import *
+from pygame_html.css import CSS
 
 
 class GUIWindow(BaseStructure, HTMLParser):
@@ -28,18 +29,6 @@ class GUIWindow(BaseStructure, HTMLParser):
             cls.base_path = path
         else:
             debug_print('WARNING: ' + path + ' does not exist')
-
-    def parse_css(self, css: str):
-        kwargs = {}
-        lines = css.split(';')
-        lines = [i for i in lines if i]
-        for i in lines:
-            key, value, *_ = i.split(':')
-            if _:
-                # possibly invalid css with more syntax a : b : c
-                continue
-            kwargs[key] = value
-        return kwargs
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
@@ -65,7 +54,7 @@ class GUIWindow(BaseStructure, HTMLParser):
         for i in attrs:
             if i[0] is not None and i[1] is not None:
                 if i[0] == 'style':
-                    for key, value in self.parse_css(i[1]).items():
+                    for key, value in CSS.parse_css(i[1]).items():
                         kwargs[key] = value
                 else:
                     kwargs[i[0]] = i[1]
@@ -172,9 +161,10 @@ class GUIWindow(BaseStructure, HTMLParser):
             # data = re.sub('<[ ]*hr[ ]*>', '<br/>', data)
             # debug_print(data)
         self.feed(data)
-        self.offset_root_window()
+        # self.offset_root_window()
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
+        self.offset_root_window()
         # self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
         # self.recursive_children(self.root)
 
@@ -217,6 +207,8 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
                         return
+                if e.type == QUIT_EVENT:
+                    return
             # surf.fill('white')
             manager.update(events)
             manager.draw(surf)
@@ -237,11 +229,13 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_ESCAPE:
                         return
-            surf.fill('white')
+                if e.type == QUIT_EVENT:
+                    return
+            # surf.fill('white')
             manager.update(events)
             manager.draw(surf)
-            await asyncio.sleep(0)
             pygame.display.update()
+            await asyncio.sleep(0)
             clock.tick(fps)
 
     def queue_popup(self, file_name):

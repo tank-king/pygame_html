@@ -45,8 +45,6 @@ class Container(BaseStructure):
         self.attributes = {}
         self.init_kwargs = kwargs
         for i, j in kwargs.items():
-            if self.__class__.__name__ == 'PContainer':
-                print(i, j)
             self.__setattr__(i, j)
 
     def __repr__(self):
