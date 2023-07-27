@@ -16,6 +16,9 @@ class TextContainer(Container):
     # def update(self, events: list[pygame.event.Event], dt=1.0):
     #     super().update(events, dt)
 
+    def __repr__(self):
+        return f'<TextContainer(text={self.font_settings["text"]})>'
+
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         super().draw(surf, offset)
         text = FontEngine.generate_text(**self.font_settings)
@@ -124,8 +127,8 @@ class H6Container(Container):
         super().__init__(**kwargs)
 
 
-class HeadContainer(Container):
-    pass
+# class HeadContainer(Container):
+#     pass
 
 
 class HTMLContainer(Container):

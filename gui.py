@@ -29,7 +29,6 @@ class GUIWindow(BaseStructure, HTMLParser):
         else:
             debug_print('WARNING: ' + path + ' does not exist')
 
-
     def parse_css(self, css: str):
         kwargs = {}
         lines = css.split(';')
@@ -46,6 +45,7 @@ class GUIWindow(BaseStructure, HTMLParser):
         tag = tag.lower()
         parent = self.stack[-1] if self.stack else self.root
         exists = False
+        self_closing_tags = ['img', 'hr', 'br', 'meta']
         lib = importlib.import_module('pygame_html.container_definitions')
         for i in dir(lib):
             if i.endswith('Container'):
@@ -53,8 +53,11 @@ class GUIWindow(BaseStructure, HTMLParser):
                     exists = True
         if tag == 'container':
             exists = True
+        # if tag in ['head', 'meta']:
+        #     exists = False
         if not exists or self.ignore_stack:
-            self.ignore_stack.append(tag)
+            if tag not in self_closing_tags:
+                self.ignore_stack.append(tag)
             debug_print(tag, self.ignore_stack)
             return
         # debug_print(self.stack)
@@ -69,8 +72,8 @@ class GUIWindow(BaseStructure, HTMLParser):
         container = self.get_container_from_tag(tag, kwargs)
         container.label = tag
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
-            self.handle_startendtag('br', [])
-        self_closing_tags = ['img', 'hr', 'br']
+            parent.add_child(BRContainer())
+            # self.handle_startendtag('br', [])
         if tag not in self_closing_tags:
             self.stack.append(container)
         if tag == 'pre':
@@ -87,7 +90,10 @@ class GUIWindow(BaseStructure, HTMLParser):
         if self.stack:
             self.stack.pop()
         if tag in ['p', *['h' + str(i + 1) for i in range(6)]]:
-            self.handle_startendtag('br', [])
+            debug_print('ending...', tag)
+            parent = self.stack[-1] if self.stack else self.root
+            parent.add_child(BRContainer())
+            # self.handle_startendtag('br', [])
 
     def handle_data(self, data: str):
         if self.stack and self.stack[-1].label == 'pre':
@@ -145,7 +151,7 @@ class GUIWindow(BaseStructure, HTMLParser):
             display_rect = pygame.display.get_surface().get_rect().copy()
             try:
                 rect.__setattr__(self.window_offset, display_rect.__getattribute__(self.window_offset))
-                self.root.move(rect.topleft)
+                self.root.set_pos(rect.topleft)
                 # print(rect.topleft, self.root.pos, self.root.children[-1].pos)
             except pygame.error:
                 pass
@@ -169,7 +175,8 @@ class GUIWindow(BaseStructure, HTMLParser):
         self.offset_root_window()
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
-        self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
+        # self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
+        # self.recursive_children(self.root)
 
     def recursive_children(self, container: Container, indent=0):
         debug_print(' ' * indent, container)
@@ -181,16 +188,19 @@ class GUIWindow(BaseStructure, HTMLParser):
         # debug_print(self.root.effective_rect)
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
+        # if self.window_offset:
+        #     pygame.draw.rect(surf, 'white', pygame.Rect(*self.window_offset, *self.root.size))
         self.root.draw(surf, offset)
 
 
 class GUIManager(BaseStructure):
-    def __init__(self, auto_resize=True):
+    def __init__(self, auto_resize=False):
         self.auto_resize = auto_resize
         self.window: Optional[GUIWindow] = None
         self.queued_windows = ['sample.html']
         self.current_window = ''
         self.minimized = False
+        self.surf = pygame.Surface((0, 0))
 
     @staticmethod
     def run_until_close(file_name, size=None, offset=None, fps=60):

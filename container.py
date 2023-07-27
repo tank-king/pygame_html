@@ -1,5 +1,6 @@
 from typing import Optional
 
+import pygame
 from pygame import Vector2
 
 from pygame_html.config import *
@@ -42,7 +43,6 @@ class Container(BaseStructure):
         self.align = 'left'
         self.parent: Optional['Container'] = None
         self.attributes = {}
-        self.setup()
         self.init_kwargs = kwargs
         for i, j in kwargs.items():
             self.__setattr__(i, j)
@@ -63,7 +63,8 @@ class Container(BaseStructure):
                 continue
             if i not in self.init_kwargs and not self.font_setting_overriden(i):
                 self.__setattr__(i, self.get_override_from_parent(i))
-        self.setup()
+            # if i == 'size':
+            #     debug_print(self.label, i, self.get_override_from_parent(i))
 
     def font_setting_overriden(self, setting):
         return self.font_settings.get(setting) != FontEngine.DEFAULTS.get(setting)
@@ -77,8 +78,13 @@ class Container(BaseStructure):
     def setattr(self, key, value):
         self.attributes[key] = value
 
-    def setup(self):
-        pass
+    @property
+    def size(self):
+        return self.width, self.height
+
+    @property
+    def capped_rect(self):
+        return pygame.Rect(*self.pos, self.capped_width, self.capped_height)
 
     @property
     def position(self):
@@ -106,10 +112,17 @@ class Container(BaseStructure):
     def selected(self):
         return self.rect.collidepoint(*pygame.mouse.get_pos())
 
+    @property
+    def capped_selected(self):
+        return self.capped_rect.collidepoint(*pygame.mouse.get_pos()) and (
+            self.parent.capped_selected if self.parent else True
+        )
+
     def move(self, d_pos):
         self.pos += d_pos
         for i in self.children:
-            i.pos += d_pos
+            # i.pos += d_pos
+            i.move(d_pos)
 
     def get_capped_width(self):
         if self.children:
@@ -130,6 +143,9 @@ class Container(BaseStructure):
                 else:
                     return self.capped_width
 
+    def setup(self):
+        pass
+
     def set_parent(self, parent: 'Container'):
         self.parent = parent
         self.override_font_settings_from_parent()
@@ -144,21 +160,31 @@ class Container(BaseStructure):
         child.set_parent(self)
 
     def rearrange_layout(self):
+        if self.label in ['body', 'html', 'center', 'p']:
+            if self.parent:
+                debug_print(self, self.parent, '>>>>>>>>>', self.width, self.parent.width)
+                if self.parent.capped_width:
+                    self.width = self.parent.capped_width
+                else:
+                    self.width = self.root.capped_width
         cursor = self.pos + pygame.Vector2()
         lines = [[0, 0]]
         line_containers = [[]]
+        # self.effective_rect = pygame.Rect(*self.pos, 0, 0)
         self.effective_rect = self.rect.copy()
         for i in self.children:
             i.rearrange_layout()
 
             if isinstance(i, BRContainer):
                 cursor = pygame.Vector2(*self.effective_rect.bottomleft)
+                # cursor = pygame.Vector2(self.pos.x, lines[-1][1])
                 lines.append([0, 0])
                 line_containers.append([])
             else:
                 if self.get_capped_width() and lines[-1][0]:
                     if lines[-1][0] + i.width > self.get_capped_width():
                         cursor = pygame.Vector2(*self.effective_rect.bottomleft)
+                        # cursor = pygame.Vector2(self.pos.x, lines[-1][1])
                         lines.append([0, 0])
                         line_containers.append([])
 
@@ -183,21 +209,26 @@ class Container(BaseStructure):
         if self.align != 'left' or True:
             if self.label in ['body', 'html', 'center', 'p']:
                 if self.parent:
-                    self.width = self.parent.width
+                    debug_print(self, self.parent, '>>>>>>>>>', self.width, self.parent.width)
+                    if self.parent.capped_width:
+                        self.width = self.parent.capped_width
+                    else:
+                        self.width = self.root.capped_width
+                    # self.width = self.parent.width
 
-        for i in line_containers:
-            if not i:
-                continue
-            w = sum(j.width for j in i)
-            align = self.align
-            if align == 'center':
-                d = self.rect.size[0] / 2 - w / 2
-            elif align == 'right':
-                d = self.rect.size[0] - w
-            else:
-                d = 0
-            for j in i:
-                j.move(Vector2(d, 0))
+                for i in line_containers:
+                    if not i:
+                        continue
+                    w = sum(j.width for j in i)
+                    align = self.align
+                    if align == 'center':
+                        d = self.rect.size[0] / 2 - w / 2
+                    elif align == 'right':
+                        d = self.rect.size[0] - w
+                    else:
+                        d = 0
+                    for j in i:
+                        j.move(Vector2(d, 0))
 
     def set_alignment(self):
         pass
@@ -207,7 +238,7 @@ class Container(BaseStructure):
             i.update(events, dt)
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
-        if DEBUG:
+        if Config.DEBUG:
             if self.selected:
                 color = 'red'
             else:

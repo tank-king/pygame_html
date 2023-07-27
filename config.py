@@ -1,7 +1,10 @@
 FONT = 'consolas'
-DEBUG = False
+
+
+class Config:
+    DEBUG = False
 
 
 def debug_print(*args):
-    if DEBUG:
+    if Config.DEBUG:
         print(*args)

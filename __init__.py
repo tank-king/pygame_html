@@ -1,8 +1,9 @@
 from .gui import GUIManager, GUIWindow
+from .config import Config
 import sys
 from pathlib import Path
 
-# sys.path.append(Path(__file__).absolute().__str__())
+sys.path.append(Path(__file__).absolute().__str__())
 
 
 def set_default_html_folder_path(path):
@@ -15,3 +16,7 @@ async def async_show_gui_popup(filename, size=None, offset=None, fps=60):
 
 def show_gui_popup(filename, size=None, offset=None, fps=60):
     GUIManager.run_until_close(filename, size, offset, fps)
+
+
+def set_debug(value: bool):
+    Config.DEBUG = value
