@@ -164,9 +164,19 @@ class GUIWindow(BaseStructure, HTMLParser):
         # self.offset_root_window()
         # TODO temporary fix
         self.root.rearrange_layout()  # first time rearrangement to estimate size of all containers
+
         self.offset_root_window()
         # self.root.rearrange_layout()  # second time rearrangement to position and align all containers properly
-        # self.recursive_children(self.root)
+        self.recursive_children(self.root)
+
+    # def hard_cap_root_height(self):
+    #     # TODO temp fixing for hard-capping vertical
+    #     root = self.root
+    #     for i in root.children:
+    #         if i.label == 'html':
+    #             for j in i.children:
+    #                 if j.label == 'body':
+    #                     for k in j.children:
 
     def recursive_children(self, container: Container, indent=0):
         debug_print(' ' * indent, container)
@@ -185,6 +195,8 @@ class GUIWindow(BaseStructure, HTMLParser):
 
 
 class GUIManager(BaseStructure):
+    border_thickness = 10
+
     def __init__(self, auto_resize=False):
         self.auto_resize = auto_resize
         self.window: Optional[GUIWindow] = None
@@ -195,6 +207,7 @@ class GUIManager(BaseStructure):
 
     @staticmethod
     def run_until_close(file_name, size=None, offset=None, fps=60):
+        # offset = (offset[0] + GUIManager.border_thickness / 2, offset[1] + GUIManager.border_thickness / 2)
         manager = GUIManager()
         manager.load_popup(file_name, size, offset)
         surf = pygame.display.get_surface()
@@ -205,7 +218,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.QUIT:
                     return
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE:
+                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
                         return
                 if e.type == QUIT_EVENT:
                     return
@@ -284,5 +297,14 @@ class GUIManager(BaseStructure):
         if self.minimized:
             return
         if self.window:
+            t = 5
+            c = 'red'
             self.window.draw(surf, offset)
-            # pygame.draw.rect(pygame.display.get_surface(), 'red', self.window.root.rect, 10)
+            pygame.draw.rect(
+                pygame.display.get_surface(),
+                c,
+                self.window.root.rect.inflate(
+                    t * 2, t * 2
+                ),
+                t
+            )

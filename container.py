@@ -63,8 +63,8 @@ class Container(BaseStructure):
                 continue
             if i not in self.init_kwargs and not self.font_setting_overriden(i):
                 # if self.label == 'p':
-                    # print(i)
-                    # print(self.parent, self.align, self.parent.align)
+                # print(i)
+                # print(self.parent, self.align, self.parent.align)
                 self.__setattr__(i, self.get_override_from_parent(i))
             # if i == 'size':
             #     debug_print(self.label, i, self.get_override_from_parent(i))
@@ -211,6 +211,18 @@ class Container(BaseStructure):
             lines[-1][1] = max(lines[-1][1], i.height)
             self.effective_rect = pygame.Rect(*self.pos, max([row[0] for row in lines]),
                                               sum([row[1] for row in lines]))
+            # TODO temp fixing for hard-capping vertical
+            if self.label == 'body':
+                if self.effective_rect.height > self.root.capped_height and self.root.capped_height:
+                    deleted_containers: list[Container] = line_containers.pop()
+                    index = self.children.index(deleted_containers[0])
+                    # deleted containers should have at least 1 element
+                    self.children = self.children[0:index]
+                    for j in deleted_containers:
+                        j.parent = None
+                        if j in self.children:
+                            self.children.remove(j)
+                    break
 
         size_less = self.effective_rect.w < self.width or self.effective_rect.h < self.height
         self.width = max(self.width, self.effective_rect.width)
