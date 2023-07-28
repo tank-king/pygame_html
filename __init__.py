@@ -1,3 +1,5 @@
+import pygame
+
 from pygame_html.gui import GUIManager, GUIWindow
 from pygame_html.config import Config
 import sys
@@ -20,3 +22,15 @@ def show_gui_popup(filename, size=None, offset=None, fps=60):
 
 def set_debug(value: bool):
     Config.DEBUG = value
+
+
+_gui_manager = GUIManager()
+
+
+def update_and_draw(events: list[pygame.event.Event], surf: pygame.Surface, dt=1):
+    _gui_manager.update(events, dt)
+    _gui_manager.draw(surf)
+
+
+def show_popup(file_name, size=None, offset=None):
+    _gui_manager.load_popup(file_name, size, offset)

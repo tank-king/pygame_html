@@ -280,6 +280,9 @@ class GUIManager(BaseStructure):
             self.window = None
             self.queued_windows.clear()
 
+    def show_popup(self, filename, size=None, offset=None):
+        self.load_popup(file_name=filename, size=size, offset=offset)
+
     def update(self, events: list[pygame.event.Event], dt=1.0):
         if self.minimized:
             return
@@ -290,6 +293,11 @@ class GUIManager(BaseStructure):
                         e.x if not self.window.root.capped_width else self.window.root.capped_width, e.y
                     )
                     self.window.load_from_html(self.current_window)
+            if e.type == QUIT_EVENT:
+                self.close_popup()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    self.close_popup()
         if self.window:
             self.window.update(events, dt)
 
@@ -308,3 +316,7 @@ class GUIManager(BaseStructure):
                 ),
                 t
             )
+
+    def update_and_draw(self, events, dt, surf):
+        self.update(events, dt)
+        self.draw(surf)
