@@ -240,7 +240,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.QUIT:
                     return
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE:
+                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
                         return
                 if e.type == QUIT_EVENT:
                     return
@@ -296,7 +296,7 @@ class GUIManager(BaseStructure):
             if e.type == QUIT_EVENT:
                 self.close_popup()
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE:
+                if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
                     self.close_popup()
         if self.window:
             self.window.update(events, dt)
@@ -306,7 +306,7 @@ class GUIManager(BaseStructure):
             return
         if self.window:
             t = 5
-            c = 'red'
+            c = 'gray'
             self.window.draw(surf, offset)
             pygame.draw.rect(
                 pygame.display.get_surface(),
