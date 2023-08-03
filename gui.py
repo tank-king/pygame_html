@@ -16,6 +16,7 @@ class GUIWindow(BaseStructure, HTMLParser):
 
     def __init__(self, width, height, offset=None):
         super().__init__()
+        self.manager: Optional['GUIManager'] = None
         self.root: Container = Container(width=width, height=height)
         self.root.window = self
         self.root.label = 'root'
@@ -148,9 +149,11 @@ class GUIWindow(BaseStructure, HTMLParser):
             self.root.move(self.window_offset)
 
     def load_from_html(self, file):
-        path = Path(self.base_path) / file
+        path = Path(self.base_path) / Path(file)
         if not os.path.isfile(path):
+            debug_print('invalid path', path)
             return
+        self.base_path = path.parent
         # self.base_path = path.parent
         self.root.children.clear()
         with open(path, 'r', encoding='utf-8') as f:
@@ -240,7 +243,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.QUIT:
                     return
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
+                    if e.key == pygame.K_ESCAPE:
                         return
                 if e.type == QUIT_EVENT:
                     return
@@ -255,11 +258,17 @@ class GUIManager(BaseStructure):
         self.queued_windows.append(file_name)
 
     def load_popup(self, file_name, size=None, offset=None):
+        # TODO temp fix
+        if self.window:
+            path = Path(file_name)
+            if not os.path.isfile(path):
+                return
         if not size:
             size = pygame.display.get_surface().get_size()
         self.queued_windows.clear()
         self.current_window = ''
         self.window = GUIWindow(*size, offset)
+        self.window.manager = self
         self.current_window = file_name
         self.window.load_from_html(file_name)
 
@@ -292,11 +301,12 @@ class GUIManager(BaseStructure):
                     self.window = GUIWindow(
                         e.x if not self.window.root.capped_width else self.window.root.capped_width, e.y
                     )
+                    self.window.manager = self
                     self.window.load_from_html(self.current_window)
             if e.type == QUIT_EVENT:
                 self.close_popup()
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
+                if e.key == pygame.K_ESCAPE:
                     self.close_popup()
         if self.window:
             self.window.update(events, dt)
@@ -306,7 +316,7 @@ class GUIManager(BaseStructure):
             return
         if self.window:
             t = 5
-            c = 'gray'
+            c = 'red'
             self.window.draw(surf, offset)
             pygame.draw.rect(
                 pygame.display.get_surface(),

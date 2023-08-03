@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import pygame.image
 
+import pygame_html
 from pygame_html.container import *
 from pygame_html.event import QUIT_EVENT
 
@@ -37,8 +40,12 @@ class AContainer(Container):
         debug_print('select')
         if self.href.lower() == '__exit__':
             pygame.event.post(pygame.Event(QUIT_EVENT, {'anchor': self}))
+            return
         try:
-            self.root.window.load_from_html(self.href)
+            href = self.root.window.base_path / Path(self.href)
+            window = self.root.window
+            window.manager.show_popup(href, size=window.root.size, offset=window.window_offset)
+            # self.root.window.load_from_html(self.href)
         except Exception as e:
             _ = e
             debug_print(e)
@@ -80,7 +87,7 @@ class CenterContainer(Container):
         kwargs['align'] = 'center'
         debug_print('centteerrr')
         super().__init__(**kwargs)
-        self.align = 'center'
+        # self.align = 'center'
 
 
 class EMContainer(Container):
@@ -153,12 +160,15 @@ class IMGContainer(Container):
 
     def setup(self):
         if self.src:
-            self.image = pygame.image.load(self.src).convert_alpha()
-            self.image_to_render = self.image.copy()
-            if not self.width:
-                self.width = self.image.get_width()
-            if not self.height:
-                self.height = self.image.get_height()
+            try:
+                self.image = pygame.image.load(self.src).convert_alpha()
+                self.image_to_render = self.image.copy()
+                if not self.width:
+                    self.width = self.image.get_width()
+                if not self.height:
+                    self.height = self.image.get_height()
+            except (pygame.error, FileNotFoundError):
+                pass
 
     def draw(self, surf: pygame.Surface, offset=(0, 0)):
         if self.image and self.image_to_render:

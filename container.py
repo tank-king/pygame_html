@@ -48,7 +48,7 @@ class Container(BaseStructure):
             self.__setattr__(i, j)
 
     def __repr__(self):
-        return f'<Container(label = {self.label})'
+        return f'<Container(label = {self.label})>'
 
     def __setattr__(self, key, value):
         if hasattr(self, 'font_settings') and key in self.font_settings:
