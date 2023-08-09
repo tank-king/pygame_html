@@ -38,3 +38,7 @@ def show_popup(file_name, size=None, offset=None):
 
 def is_showing_popup():
     return _gui_manager.window is not None
+
+
+def close_popup():
+    _gui_manager.close_popup()
