@@ -221,7 +221,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.QUIT:
                     return
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
+                    if e.key == pygame.K_ESCAPE:
                         return
                 if e.type == QUIT_EVENT:
                     return
@@ -243,7 +243,7 @@ class GUIManager(BaseStructure):
                 if e.type == pygame.QUIT:
                     return
                 if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
+                    if e.key == pygame.K_ESCAPE:
                         return
                 if e.type == QUIT_EVENT:
                     return
@@ -306,7 +306,7 @@ class GUIManager(BaseStructure):
             if e.type == QUIT_EVENT:
                 self.close_popup()
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE or e.key == pygame.K_SPACE:
+                if e.key == pygame.K_ESCAPE:
                     self.close_popup()
         if self.window:
             self.window.update(events, dt)
